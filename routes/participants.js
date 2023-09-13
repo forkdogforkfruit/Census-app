@@ -19,14 +19,19 @@ router.get("/:key", async function (req, res, next) {
 
 router.post("/", async function (req, res, next) {
   const { email, firstName, lastName, dob, active } = req.body;
-  await participants.set(email, {
-    firstName: firstName,
-    lastName: lastName,
-    dob: dob,
-    active: active,
-    //TODO add fragments
-  });
-  res.end();
+  if (email != { type: "string", format: "email" }) {
+    console.log("incorrect format for email. Must be xxx@xxx.com");
+    res.end();
+  } else {
+    await participants.set(email, {
+      firstName: firstName,
+      lastName: lastName,
+      dob: dob,
+      active: active,
+      //TODO add fragments
+    });
+    res.end();
+  }
 });
 
 router.put("/", async function (req, res, next) {
@@ -41,7 +46,8 @@ router.put("/", async function (req, res, next) {
   res.end();
 });
 
-router.get("/details", function (req, res, next) {
+//GET individual participant details.
+router.get("/details/:key", function (req, res, next) {
   res.render("details", { title: "Details" });
 });
 
