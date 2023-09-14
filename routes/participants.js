@@ -4,11 +4,38 @@ const CyclicDB = require("@cyclic.sh/dynamodb");
 const db = CyclicDB(process.env.CYCLIC_DB);
 let participants = db.collection("participants");
 
+//Used to save requests(?) on S3
+const AWS = require("aws-sdk");
+const s3 = new AWS.S3();
+
 /* GET All Participants. */
 router.get("/", async function (req, res, next) {
-  let list = await participants.list();
-  res.send(list);
-  //res.render("home", { title: " Participants" });
+  var params = {
+    Bucket: process.env.CYCLIC_BUCKET_NAME,
+    Delimiter: "/",
+    // prefix when added auth oidc
+    //Prefix: 'public/'
+  };
+  //lists all participant
+  var allObjects = await s3.listObjects(params).promise();
+  let keys = allObjects?.Contents.map((x) => x.Key);
+
+  const participants = await Promise.all(
+    keys.map(async (key) => {
+      let list = await s3
+        .getObject({
+          Bucket: process.env.CYCLIC_BUCKET_NAME,
+          Key: key,
+        })
+        .promise();
+      return {
+        
+        name: key.split("/").pop(),
+      };
+    })
+  );
+
+  res.send(participants);
 });
 
 //GET Participants With a Key
@@ -18,6 +45,16 @@ router.get("/:key", async function (req, res, next) {
 });
 
 router.post("/", async function (req, res, next) {
+  const participant = req.body;
+  console.log(req.body);
+  await s3
+    .putObject({
+      Body: participant.data,
+      Bucket: process.env.CYCLIC_BUCKET_NAME,
+      Key: participant.email,
+    })
+    .promise();
+
   const { email, firstName, lastName, dob, active } = req.body;
   if (email != { type: "string", format: "email" }) {
     console.log("incorrect format for email. Must be xxx@xxx.com");
