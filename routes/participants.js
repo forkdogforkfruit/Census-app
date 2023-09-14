@@ -8,8 +8,10 @@ let participants = db.collection("participants");
 const AWS = require("aws-sdk");
 const s3 = new AWS.S3();
 
+const { requiresAuth } = require("express-openid-connect");
+
 /* GET All Participants. */
-router.get("/", async function (req, res, next) {
+router.get("/", requiresAuth(), async function (req, res, next) {
   var params = {
     Bucket: process.env.CYCLIC_BUCKET_NAME,
     Delimiter: "/",
@@ -29,7 +31,6 @@ router.get("/", async function (req, res, next) {
         })
         .promise();
       return {
-        
         name: key.split("/").pop(),
       };
     })
@@ -41,10 +42,11 @@ router.get("/", async function (req, res, next) {
 //GET Participants With a Key
 router.get("/:key", async function (req, res, next) {
   let item = await participants.get(req.params.key);
+  console.log("an item has been requested");
   res.send(item);
 });
 
-router.post("/", async function (req, res, next) {
+router.post("/", requiresAuth(), async function (req, res, next) {
   const participant = req.body;
   console.log(req.body);
   await s3
@@ -71,7 +73,7 @@ router.post("/", async function (req, res, next) {
   }
 });
 
-router.put("/", async function (req, res, next) {
+router.put("/", requiresAuth(), async function (req, res, next) {
   const { email, firstName, lastName, dob, active } = req.body;
   await participants.set(email, {
     firstName: firstName,
@@ -84,15 +86,15 @@ router.put("/", async function (req, res, next) {
 });
 
 //GET individual participant details.
-router.get("/details/:key", function (req, res, next) {
+router.get("/details/:key", requiresAuth(), function (req, res, next) {
   res.render("details", { title: "Details" });
 });
 
-router.get("/work", function (req, res, next) {
+router.get("/work", requiresAuth(), function (req, res, next) {
   res.render("work", { title: "work" });
 });
 
-router.get("/home", function (req, res, next) {
+router.get("/home", requiresAuth(), function (req, res, next) {
   res.render("home", { title: "home" });
 });
 

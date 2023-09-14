@@ -6,6 +6,11 @@
   </head>
   <body>
     <h1><%= title %></h1>
-    <p>This is /participants/add</p>
+    <p>This is localhost:3000</p>
+    <% if (locals.isAuthenticated) { %>
+    <p>You are logged in.</p>
+    <% } else { %>
+    <p>You are not logged in. <a href="/login" class="underline">Login</a>.</p>
+    <% } %>
   </body>
 </html>
