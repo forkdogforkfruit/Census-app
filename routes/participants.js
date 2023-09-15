@@ -10,7 +10,7 @@ const s3 = new AWS.S3();
 
 const { requiresAuth } = require("express-openid-connect");
 
-/* GET All Participants. */
+/* GET All Participants ONLY LISTING KEY. */
 router.get("/", async function (req, res, next) {
   console.log(req.oidc.user);
 
@@ -33,7 +33,42 @@ router.get("/", async function (req, res, next) {
         })
         .promise();
       return {
-        name: key.split("/").pop(),
+        id: key.split("/").pop(),
+      };
+    })
+  );
+
+  res.send(participants);
+});
+
+/* GET All Participants With all details. */
+router.get("/details", async function (req, res, next) {
+  /* let list = await participants.list();
+  res.send(list); */
+
+  //  console.log(req.oidc.user);
+
+  var params = {
+    Bucket: process.env.CYCLIC_BUCKET_NAME,
+    Delimiter: "/",
+    // prefix to be added when added auth oidc
+    //Prefix: "/",
+  };
+  //lists all participant
+  var allObjects = await s3.listObjects(params).promise();
+  let keys = allObjects?.Contents.map((x) => x.Key);
+  console.log();
+
+  const participants = await Promise.all(
+    keys.map(async (key) => {
+      let list = await s3
+        .getObject({
+          Bucket: process.env.CYCLIC_BUCKET_NAME,
+          Key: key,
+        })
+        .promise();
+      return {
+        id: key.split("/").pop(),
       };
     })
   );
@@ -48,7 +83,7 @@ router.get("/:key", async function (req, res, next) {
   res.send(item);
 });
 
-router.post("/", requiresAuth(), async function (req, res, next) {
+router.post("/", async function (req, res, next) {
   const participant = req.body;
   console.log(req.body);
   await s3
@@ -88,7 +123,7 @@ router.put("/", requiresAuth(), async function (req, res, next) {
 });
 
 //GET individual participant details.
-router.get("/details/:key", requiresAuth(), function (req, res, next) {
+router.get("/details/:key", function (req, res, next) {
   res.send(req.params);
   //res.render("details", { title: "Details" });
 });
