@@ -89,7 +89,8 @@ router.put("/", requiresAuth(), async function (req, res, next) {
 
 //GET individual participant details.
 router.get("/details/:key", requiresAuth(), function (req, res, next) {
-  res.render("details", { title: "Details" });
+  res.send(req.params);
+  //res.render("details", { title: "Details" });
 });
 
 router.get("/work", requiresAuth(), function (req, res, next) {
