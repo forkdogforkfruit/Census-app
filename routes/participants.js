@@ -12,11 +12,15 @@ const { requiresAuth } = require("express-openid-connect");
 
 /* GET All Participants ONLY LISTING KEY. */
 router.get("/", async function (req, res, next) {
-  console.log(req.oidc.user);
+  //console.log(req.oidc.user);
+  res.send(
+    "Please go to /details to see all participants or /add to add participants"
+  );
 
-  var params = {
+  /* var params = {
     Bucket: process.env.CYCLIC_BUCKET_NAME,
     Delimiter: "/",
+    firstName: req.body.firstName,
     // prefix when added auth oidc
     //Prefix: 'public/'
   };
@@ -30,25 +34,40 @@ router.get("/", async function (req, res, next) {
         .getObject({
           Bucket: process.env.CYCLIC_BUCKET_NAME,
           Key: key,
+          firstName: req.body.firstName,
         })
         .promise();
       return {
         id: key.split("/").pop(),
+        firstName: key.firstName,
       };
     })
   );
 
-  res.send(participants);
+  res.send(participants); */
+});
+
+// POST  a new record at /add
+router.post("/add", async function (req, res, next) {
+  const { email, firstName, lastName, dob, active } = req.body;
+  await participants.set(email, {
+    firstName: firstName,
+    lastName: lastName,
+    dob: dob,
+    active: active,
+    //TODO add fragments
+  });
+  res.end();
 });
 
 /* GET All Participants With all details. */
 router.get("/details", async function (req, res, next) {
-  /* let list = await participants.list();
-  res.send(list); */
+  console.log("participants/ details GET request");
+  let list = await participants.list();
+  res.send(list);
 
   //  console.log(req.oidc.user);
-
-  var params = {
+  /* var params = {
     Bucket: process.env.CYCLIC_BUCKET_NAME,
     Delimiter: "/",
     // prefix to be added when added auth oidc
@@ -69,20 +88,23 @@ router.get("/details", async function (req, res, next) {
         .promise();
       return {
         id: key.split("/").pop(),
+        email: key,
       };
     })
   );
 
-  res.send(participants);
+  res.send(participants); */
 });
 
 //GET Participants With a Key
-router.get("/:key", async function (req, res, next) {
-  let item = await participants.get(req.params.key);
+router.get("/details/:key", async function (req, res, next) {
+  //let item = await participants.get(req.params.firstName);
   console.log("an item has been requested");
+  let item = await participants.get(req.params.key);
   res.send(item);
 });
 
+//Made it to here!!!! Keep going in the morning,
 router.post("/", async function (req, res, next) {
   const participant = req.body;
   console.log(req.body);
@@ -120,12 +142,6 @@ router.put("/", requiresAuth(), async function (req, res, next) {
     //TODO add fragments
   });
   res.end();
-});
-
-//GET individual participant details.
-router.get("/details/:key", function (req, res, next) {
-  res.send(req.params);
-  //res.render("details", { title: "Details" });
 });
 
 router.get("/work", requiresAuth(), function (req, res, next) {
