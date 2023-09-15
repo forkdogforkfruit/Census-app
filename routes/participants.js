@@ -11,7 +11,7 @@ const s3 = new AWS.S3();
 const { requiresAuth } = require("express-openid-connect");
 
 /* GET All Participants. */
-router.get("/", requiresAuth(), async function (req, res, next) {
+router.get("/", async function (req, res, next) {
   console.log(req.oidc.user);
 
   var params = {
