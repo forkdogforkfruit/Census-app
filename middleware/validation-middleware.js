@@ -7,6 +7,9 @@ const participant = async (req, res, next) => {
     lastName: "required|string",
     dob: "required|date",
     active: "boolean",
+    companyname: "string",
+    salary: "integer",
+    currency: "integer",
   };
 
   await validator(req.body, validationRule, {}, (err, status) => {
