@@ -8,6 +8,16 @@ let participants = db.collection("participants");
 const AWS = require("aws-sdk");
 const s3 = new AWS.S3();
 
+let Validator = require("validatorjs");
+let validator = require("../middleware/validate");
+
+let rules = {
+  email: "required|email",
+  firstName: "required|string",
+  lastName: "required|string",
+  dob: "required|date",
+  active: "boolean",
+};
 const { requiresAuth } = require("express-openid-connect");
 
 /* GET All Participants records listed ONLY by key (email). */
@@ -19,17 +29,50 @@ router.get("/", async function (req, res, next) {
 });
 
 // POST a new record at /add
-router.post("/add", async function (req, res, next) {
+router.post("/add", validator, async function (req, res, next) {
+  console.log("post request made to participants/add");
   const { email, firstName, lastName, dob, active } = req.body;
-  await participants.set(email, {
-    firstName: firstName,
-    lastName: lastName,
-    dob: dob,
-    active: active,
-    //TODO add fragments
-  });
 
-  res.end();
+  let validation = new Validator(
+    req.body,
+    //{ email, firstName, lastName, dob, active },
+    rules
+  );
+  if (validation.passes()) {
+    await participants.set(email, {
+      firstName: firstName,
+      lastName: lastName,
+      dob: dob,
+      active: active,
+      //TODO add fragments
+    });
+    res.status(200).json({
+      message: "Added record",
+    });
+  } else {
+    res.status(400).json({
+      message: "Incorrect information given",
+    });
+  }
+  //validation.fails();
+  /* const { email, firstName, lastName, dob, active } = req.body;
+  if (req.body == null && req.body.email != "xxxxx") {
+    await participants.set(email, {
+      firstName: firstName,
+      lastName: lastName,
+      dob: dob,
+      active: active,
+      //TODO add fragments
+    });
+
+    res.status(200).json({
+      message: "Added record",
+    });
+  } else {
+    res.status(400).json({
+      message: "Incorrect information given",
+    });
+  } */
 });
 
 /* GET All Participants With all details. */
@@ -70,8 +113,7 @@ router.get("/details", async function (req, res, next) {
 
 //GET a specific record with use of a key (email)
 router.get("/details/:key", async function (req, res, next) {
-  //let item = await participants.get(req.params.firstName);
-  console.log("an item has been requested");
+  console.log("a record detail has been requested");
   let item = await participants.get(req.params.key);
   res.send(item);
 });
@@ -86,6 +128,12 @@ router.put("/", async function (req, res, next) {
     active: active,
     //TODO add fragments
   });
+  res.end();
+});
+
+router.delete("/:email", async function (req, res, next) {
+  console.log(" A delete request has been made.");
+  await participants.delete(req.params.email);
   res.end();
 });
 

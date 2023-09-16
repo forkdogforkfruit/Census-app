@@ -17,6 +17,7 @@
     "express-openid-connect": "^2.16.0",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
-    "validator": "^13.11.0"
+    "validator": "^13.11.0",
+    "validatorjs": "^3.22.1"
   }
 }

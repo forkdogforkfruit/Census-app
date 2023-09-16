@@ -1,10 +1,11 @@
 const validator = require("./validate");
+
 const participant = async (req, res, next) => {
   const validationRule = {
     email: "required|string|email",
     firstName: "required|string",
     lastName: "required|string",
-    dob: "required|dated",
+    dob: "required|date",
     active: "boolean",
   };
 
