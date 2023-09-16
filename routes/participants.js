@@ -20,7 +20,7 @@ let rules = {
 };
 const { requiresAuth } = require("express-openid-connect");
 
-/* GET All Participants records listed ONLY by key (email). */
+/* Home page */
 router.get("/", async function (req, res, next) {
   //console.log(req.oidc.user);
   res.send(
@@ -28,7 +28,25 @@ router.get("/", async function (req, res, next) {
   );
 });
 
+/* GET All Participants With all details. */
+//TODO: add requiresAuth
+router.get("/details", async function (req, res, next) {
+  //  console.log(req.oidc.user);
+  console.log("participants/ details GET request");
+  let list = await participants.list();
+  res.send(list);
+});
+
+//GET a specific record with use of a key (email)
+//TODO: add requiresAuth
+router.get("/details/:key", async function (req, res, next) {
+  console.log("a record detail has been requested");
+  let item = await participants.get(req.params.key);
+  res.send(item);
+});
+
 // POST a new record at /add
+//TODO: add requiresAuth
 router.post("/add", validator, async function (req, res, next) {
   console.log("post request made to participants/add");
   const { email, firstName, lastName, dob, active } = req.body;
@@ -54,71 +72,10 @@ router.post("/add", validator, async function (req, res, next) {
       message: "Incorrect information given",
     });
   }
-  //validation.fails();
-  /* const { email, firstName, lastName, dob, active } = req.body;
-  if (req.body == null && req.body.email != "xxxxx") {
-    await participants.set(email, {
-      firstName: firstName,
-      lastName: lastName,
-      dob: dob,
-      active: active,
-      //TODO add fragments
-    });
-
-    res.status(200).json({
-      message: "Added record",
-    });
-  } else {
-    res.status(400).json({
-      message: "Incorrect information given",
-    });
-  } */
-});
-
-/* GET All Participants With all details. */
-router.get("/details", async function (req, res, next) {
-  console.log("participants/ details GET request");
-  let list = await participants.list();
-  res.send(list);
-
-  //  console.log(req.oidc.user);
-  /* var params = {
-    Bucket: process.env.CYCLIC_BUCKET_NAME,
-    Delimiter: "/",
-    // prefix to be added when added auth oidc
-    //Prefix: "/",
-  };
-  //lists all participant
-  var allObjects = await s3.listObjects(params).promise();
-  let keys = allObjects?.Contents.map((x) => x.Key);
-  console.log();
-
-  const participants = await Promise.all(
-    keys.map(async (key) => {
-      let list = await s3
-        .getObject({
-          Bucket: process.env.CYCLIC_BUCKET_NAME,
-          Key: key,
-        })
-        .promise();
-      return {
-        id: key.split("/").pop(),
-        email: key,
-      };
-    })
-  );
-
-  res.send(participants); */
-});
-
-//GET a specific record with use of a key (email)
-router.get("/details/:key", async function (req, res, next) {
-  console.log("a record detail has been requested");
-  let item = await participants.get(req.params.key);
-  res.send(item);
 });
 
 //Updates a record
+//TODO: add requiresAuth
 router.put("/", async function (req, res, next) {
   console.log("put request made.");
   const { email, firstName, lastName, dob, active } = req.body;
@@ -146,6 +103,9 @@ router.put("/", async function (req, res, next) {
   }
 });
 
+//DELETES a record
+//TODO: add requiresAuth
+//TODO: change so that does not delete but changes from active to inactive
 router.delete("/:email", async function (req, res, next) {
   console.log(" A delete request has been made.");
   await participants.delete(req.params.email);
@@ -164,61 +124,3 @@ router.get("/home", requiresAuth(), function (req, res, next) {
 });
 
 module.exports = router;
-
-//Not needed as wrote a new post/add handler
-/* router.post("/add", async function (req, res, next) {
-  const participant = req.body;
-  console.log(req.body);
-  await s3
-    .putObject({
-      Body: participant.data,
-      Bucket: process.env.CYCLIC_BUCKET_NAME,
-      Key: participant.email,
-    })
-    .promise();
-
-  const { email, firstName, lastName, dob, active } = req.body;
-  if (email != { type: "string", format: "email" }) {
-    console.log("incorrect format for email. Must be xxx@xxx.com");
-    res.end();
-  } else {
-    await participants.set(email, {
-      firstName: firstName,
-      lastName: lastName,
-      dob: dob,
-      active: active,
-      //TODO add fragments
-    });
-    res.end();
-  }
-}); */
-
-//This was part of get "/"
-/* var params = {
-    Bucket: process.env.CYCLIC_BUCKET_NAME,
-    Delimiter: "/",
-    firstName: req.body.firstName,
-    // prefix when added auth oidc
-    //Prefix: 'public/'
-  };
-  //lists all participant
-  var allObjects = await s3.listObjects(params).promise();
-  let keys = allObjects?.Contents.map((x) => x.Key);
-
-  const participants = await Promise.all(
-    keys.map(async (key) => {
-      let list = await s3
-        .getObject({
-          Bucket: process.env.CYCLIC_BUCKET_NAME,
-          Key: key,
-          firstName: req.body.firstName,
-        })
-        .promise();
-      return {
-        id: key.split("/").pop(),
-        firstName: key.firstName,
-      };
-    })
-  );
-
-  res.send(participants); */
