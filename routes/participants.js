@@ -16,7 +16,8 @@ let rules = {
   firstName: "required|string",
   lastName: "required|string",
   dob: "required|date",
-  active: "boolean",
+  active: "required|boolean",
+  companyname: "string",
 };
 const { requiresAuth } = require("express-openid-connect");
 
@@ -49,7 +50,16 @@ router.get("/details/:key", async function (req, res, next) {
 //TODO: add requiresAuth
 router.post("/add", validator, async function (req, res, next) {
   console.log("post request made to participants/add");
-  const { email, firstName, lastName, dob, active } = req.body;
+  const {
+    email,
+    firstName,
+    lastName,
+    dob,
+    active,
+    companyname,
+    salary,
+    currency,
+  } = req.body;
 
   let validation = new Validator(
     req.body,
@@ -57,13 +67,22 @@ router.post("/add", validator, async function (req, res, next) {
     rules
   );
   if (validation.passes()) {
-    await participants.set(email, {
-      firstName: firstName,
-      lastName: lastName,
-      dob: dob,
-      active: active,
-      //TODO add fragments
-    });
+    await participants.set(
+      email,
+      {
+        firstName: firstName,
+        lastName: lastName,
+        dob: dob,
+        active: active,
+        //TODO add fragments
+      }
+        .fragment("work")
+        .set({
+          companyname: companyname,
+          salary: salary,
+          currency: currency,
+        })
+    );
     res.status(200).json({
       message: "Added record",
     });
@@ -116,7 +135,7 @@ router.delete("/:email", async function (req, res, next) {
 });
 
 router.get("/work", requiresAuth(), function (req, res, next) {
-  res.render("work", { title: "work" });
+  console.log("participants.get has been called");
 });
 
 router.get("/home", requiresAuth(), function (req, res, next) {
