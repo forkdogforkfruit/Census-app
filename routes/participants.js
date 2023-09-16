@@ -120,20 +120,38 @@ router.get("/details/:key", async function (req, res, next) {
 
 //Updates a record
 router.put("/", async function (req, res, next) {
+  console.log("put request made.");
   const { email, firstName, lastName, dob, active } = req.body;
-  await participants.set(email, {
-    firstName: firstName,
-    lastName: lastName,
-    dob: dob,
-    active: active,
-    //TODO add fragments
-  });
-  res.end();
+
+  let validation = new Validator(
+    req.body,
+    //{ email, firstName, lastName, dob, active },
+    rules
+  );
+  if (validation.passes()) {
+    await participants.set(email, {
+      firstName: firstName,
+      lastName: lastName,
+      dob: dob,
+      active: active,
+      //TODO add fragments
+    });
+    res.status(200).json({
+      message: "Record updated",
+    });
+  } else {
+    res.status(400).json({
+      message: "Failed to update record",
+    });
+  }
 });
 
 router.delete("/:email", async function (req, res, next) {
   console.log(" A delete request has been made.");
   await participants.delete(req.params.email);
+  res.status(200).json({
+    message: "Record deleted",
+  });
   res.end();
 });
 
