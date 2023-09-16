@@ -10,44 +10,15 @@ const s3 = new AWS.S3();
 
 const { requiresAuth } = require("express-openid-connect");
 
-/* GET All Participants ONLY LISTING KEY. */
+/* GET All Participants records listed ONLY by key (email). */
 router.get("/", async function (req, res, next) {
   //console.log(req.oidc.user);
   res.send(
-    "Please go to /details to see all participants or /add to add participants"
+    "Please go to participants/details to see all participants or participants/add to add participants"
   );
-
-  /* var params = {
-    Bucket: process.env.CYCLIC_BUCKET_NAME,
-    Delimiter: "/",
-    firstName: req.body.firstName,
-    // prefix when added auth oidc
-    //Prefix: 'public/'
-  };
-  //lists all participant
-  var allObjects = await s3.listObjects(params).promise();
-  let keys = allObjects?.Contents.map((x) => x.Key);
-
-  const participants = await Promise.all(
-    keys.map(async (key) => {
-      let list = await s3
-        .getObject({
-          Bucket: process.env.CYCLIC_BUCKET_NAME,
-          Key: key,
-          firstName: req.body.firstName,
-        })
-        .promise();
-      return {
-        id: key.split("/").pop(),
-        firstName: key.firstName,
-      };
-    })
-  );
-
-  res.send(participants); */
 });
 
-// POST  a new record at /add
+// POST a new record at /add
 router.post("/add", async function (req, res, next) {
   const { email, firstName, lastName, dob, active } = req.body;
   await participants.set(email, {
@@ -57,6 +28,7 @@ router.post("/add", async function (req, res, next) {
     active: active,
     //TODO add fragments
   });
+
   res.end();
 });
 
@@ -96,7 +68,7 @@ router.get("/details", async function (req, res, next) {
   res.send(participants); */
 });
 
-//GET Participants With a Key
+//GET a specific record with use of a key (email)
 router.get("/details/:key", async function (req, res, next) {
   //let item = await participants.get(req.params.firstName);
   console.log("an item has been requested");
@@ -104,8 +76,31 @@ router.get("/details/:key", async function (req, res, next) {
   res.send(item);
 });
 
-//Made it to here!!!! Keep going in the morning,
-router.post("/", async function (req, res, next) {
+//Updates a record
+router.put("/", async function (req, res, next) {
+  const { email, firstName, lastName, dob, active } = req.body;
+  await participants.set(email, {
+    firstName: firstName,
+    lastName: lastName,
+    dob: dob,
+    active: active,
+    //TODO add fragments
+  });
+  res.end();
+});
+
+router.get("/work", requiresAuth(), function (req, res, next) {
+  res.render("work", { title: "work" });
+});
+
+router.get("/home", requiresAuth(), function (req, res, next) {
+  res.render("home", { title: "home" });
+});
+
+module.exports = router;
+
+//Not needed as wrote a new post/add handler
+/* router.post("/add", async function (req, res, next) {
   const participant = req.body;
   console.log(req.body);
   await s3
@@ -130,26 +125,34 @@ router.post("/", async function (req, res, next) {
     });
     res.end();
   }
-});
+}); */
 
-router.put("/", requiresAuth(), async function (req, res, next) {
-  const { email, firstName, lastName, dob, active } = req.body;
-  await participants.set(email, {
-    firstName: firstName,
-    lastName: lastName,
-    dob: dob,
-    active: active,
-    //TODO add fragments
-  });
-  res.end();
-});
+//This was part of get "/"
+/* var params = {
+    Bucket: process.env.CYCLIC_BUCKET_NAME,
+    Delimiter: "/",
+    firstName: req.body.firstName,
+    // prefix when added auth oidc
+    //Prefix: 'public/'
+  };
+  //lists all participant
+  var allObjects = await s3.listObjects(params).promise();
+  let keys = allObjects?.Contents.map((x) => x.Key);
 
-router.get("/work", requiresAuth(), function (req, res, next) {
-  res.render("work", { title: "work" });
-});
+  const participants = await Promise.all(
+    keys.map(async (key) => {
+      let list = await s3
+        .getObject({
+          Bucket: process.env.CYCLIC_BUCKET_NAME,
+          Key: key,
+          firstName: req.body.firstName,
+        })
+        .promise();
+      return {
+        id: key.split("/").pop(),
+        firstName: key.firstName,
+      };
+    })
+  );
 
-router.get("/home", requiresAuth(), function (req, res, next) {
-  res.render("home", { title: "home" });
-});
-
-module.exports = router;
+  res.send(participants); */
