@@ -49,7 +49,7 @@ async function getDetail(key) {
 
 /* GET a list of all participants. Shows only keys */
 //TODO: add requiresAuth
-router.get("/", requiresAuth, async function (req, res, next) {
+router.get("/", requiresAuth(), async function (req, res, next) {
   console.log(req.oidc.user);
   console.log("GET request for all participants made to /participants");
   let list = await participants.list();
@@ -58,7 +58,7 @@ router.get("/", requiresAuth, async function (req, res, next) {
 });
 
 //get all details of all active participants
-router.get("/details", requiresAuth, async function (req, res, next) {
+router.get("/details", async function (req, res, next) {
   //console.log(req.oidc.user);
   let list = await participants.list();
   let listWithDetails = (
