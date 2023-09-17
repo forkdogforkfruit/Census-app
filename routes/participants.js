@@ -18,7 +18,6 @@ let rules = {
   country: "string",
   city: "string",
 };
-const { requiresAuth } = require("express-openid-connect");
 
 async function getDetail(key) {
   console.log("getDetail:", key);
@@ -49,7 +48,7 @@ async function getDetail(key) {
 
 /* GET a list of all participants. Shows only keys */
 //TODO: add requiresAuth
-router.get("/", requiresAuth(), async function (req, res, next) {
+router.get("/", async function (req, res, next) {
   console.log(req.oidc.user);
   console.log("GET request for all participants made to /participants");
   let list = await participants.list();
