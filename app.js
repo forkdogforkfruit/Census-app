@@ -4,7 +4,6 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-var validator = require("validator")
 
 var indexRouter = require("./routes/index");
 var participantsRouter = require("./routes/participants");
