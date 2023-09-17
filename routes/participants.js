@@ -21,21 +21,26 @@ let rules = {
 };
 const { requiresAuth } = require("express-openid-connect");
 
-/* Home page */
-router.get("/", async function (req, res, next) {
-  //console.log(req.oidc.user);
-  res.send(
-    "Please go to participants/details to see all participants or participants/add to add participants"
-  );
-});
-
-/* GET All Participants With all details. */
+/* GET a list of all participants. Shows only keys */
 //TODO: add requiresAuth
-router.get("/details", async function (req, res, next) {
+router.get("/", async function (req, res, next) {
   //  console.log(req.oidc.user);
-  console.log("participants/ details GET request");
+  console.log("GET request for all participants made to /participants");
   let list = await participants.list();
   res.send(list);
+});
+
+//TODO:get all details of all participants
+router.get("/details", async function (req, res, next) {
+  //console.log(req.oidc.user);
+  let list = await participants.list();
+  let results = list.results[0];
+  //console.log(list);
+  res.send(results);
+});
+
+router.get("/details/deleted", async function (req, res, next) {
+  //TODO: need to show only inactive participants here.
 });
 
 //GET a specific record with use of a key (email)
@@ -74,7 +79,7 @@ router.post("/add", validator, async function (req, res, next) {
         lastName: lastName,
         dob: dob,
         active: active,
-        //TODO add fragments
+        //TODO: add fragments
       }
         .fragment("work")
         .set({
@@ -95,7 +100,7 @@ router.post("/add", validator, async function (req, res, next) {
 
 //Updates a record
 //TODO: add requiresAuth
-router.put("/", async function (req, res, next) {
+router.put("/:email", async function (req, res, next) {
   console.log("put request made.");
   const { email, firstName, lastName, dob, active } = req.body;
 
@@ -125,7 +130,7 @@ router.put("/", async function (req, res, next) {
 //DELETES a record
 //TODO: add requiresAuth
 //TODO: change so that does not delete but changes from active to inactive
-router.delete("/:email", async function (req, res, next) {
+router.delete("/details/:email", async function (req, res, next) {
   console.log(" A delete request has been made.");
   await participants.delete(req.params.email);
   res.status(200).json({
@@ -134,12 +139,18 @@ router.delete("/:email", async function (req, res, next) {
   res.end();
 });
 
-router.get("/work", requiresAuth(), function (req, res, next) {
-  console.log("participants.get has been called");
+//TODO: add requiresAuth
+router.get("/work/:email", async function (req, res, next) {
+  let item = await participants.get(req.params.email);
+  //TODO: need to return only work details not entire participant
+  res.send(item);
 });
 
-router.get("/home", requiresAuth(), function (req, res, next) {
-  res.render("home", { title: "home" });
+//TODO: add requiresAuth
+router.get("/home/:email", async function (req, res, next) {
+  let item = await participants.get(req.params.email);
+  //TODO: need to return only home details not entire participant
+  res.send(item);
 });
 
 module.exports = router;
