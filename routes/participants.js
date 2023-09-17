@@ -4,10 +4,6 @@ const CyclicDB = require("@cyclic.sh/dynamodb");
 const db = CyclicDB(process.env.CYCLIC_DB);
 let participants = db.collection("participants");
 
-//Used to save requests(?) on S3
-const AWS = require("aws-sdk");
-const s3 = new AWS.S3();
-
 let Validator = require("validatorjs");
 
 let rules = {
@@ -54,7 +50,7 @@ async function getDetail(key) {
 /* GET a list of all participants. Shows only keys */
 //TODO: add requiresAuth
 router.get("/", requiresAuth, async function (req, res, next) {
-  //  console.log(req.oidc.user);
+  console.log(req.oidc.user);
   console.log("GET request for all participants made to /participants");
   let list = await participants.list();
   let result = list.results.map((element) => ({ email: element.key }));
