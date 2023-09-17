@@ -27,8 +27,6 @@ const { requiresAuth } = require("express-openid-connect");
 async function getDetail(key) {
   console.log("getDetail:", key);
   let item = await participants.get(key);
-  let work = await participants.item(key).fragment("work").get();
-  let home = await participants.item(key).fragment("home").get();
   let result = {
     active: item.props.active,
     lastName: item.props.lastName,
@@ -36,12 +34,14 @@ async function getDetail(key) {
     created: item.props.created,
     firstName: item.props.firstName,
   };
+  let work = await participants.item(key).fragment("work").get();
   if (work.length > 0)
     result.work = {
       companyname: work[0].props.companyname,
       salary: work[0].props.salary,
       currency: work[0].props.currency,
     };
+  let home = await participants.item(key).fragment("home").get();
   if (home.length > 0)
     result.home = {
       country: home[0].props.country,
@@ -53,7 +53,7 @@ async function getDetail(key) {
 
 /* GET a list of all participants. Shows only keys */
 //TODO: add requiresAuth
-router.get("/", async function (req, res, next) {
+router.get("/", requiresAuth, async function (req, res, next) {
   //  console.log(req.oidc.user);
   console.log("GET request for all participants made to /participants");
   let list = await participants.list();
@@ -88,7 +88,14 @@ router.get("/details/deleted", async function (req, res, next) {
 //TODO: add requiresAuth
 router.get("/details/:key", async function (req, res, next) {
   console.log("a record detail has been requested");
-  res.send(await getDetail(req.params.key));
+  const participant = await getDetail(req.params.key);
+  if (participant.active) {
+    res.send(participant);
+  } else {
+    res.status(404).json({
+      message: "Participant is inactive",
+    });
+  }
 });
 
 // POST a new record at /add
@@ -154,11 +161,7 @@ router.put("/:email", async function (req, res, next) {
     city,
   } = req.body;
 
-  let validation = new Validator(
-    req.body,
-    //{ email, firstName, lastName, dob, active },
-    rules
-  );
+  let validation = new Validator(req.body, rules);
   if (validation.passes()) {
     await participants.set(email, {
       firstName: firstName,
@@ -203,16 +206,28 @@ router.delete("/details/:email", async function (req, res, next) {
 
 //TODO: add requiresAuth
 router.get("/work/:email", async function (req, res, next) {
-  let item = await participants.get(req.params.email);
-  //TODO: need to return only work details not entire participant
-  res.send(item);
+  console.log("Get request for /work/:email");
+  const participant = await getDetail(req.params.email);
+  if (participant.active) {
+    res.send({ work: participant.work });
+  } else {
+    res.status(404).json({
+      message: "Participant is inactive",
+    });
+  }
 });
 
 //TODO: add requiresAuth
 router.get("/home/:email", async function (req, res, next) {
-  let item = await participants.get(req.params.email);
-  //TODO: need to return only home details not entire participant
-  res.send(item);
+  console.log("Get request for /home/:email");
+  const participant = await getDetail(req.params.email);
+  if (participant.active) {
+    res.send({ home: participant.home });
+  } else {
+    res.status(404).json({
+      message: "Participant is inactive",
+    });
+  }
 });
 
 module.exports = router;
