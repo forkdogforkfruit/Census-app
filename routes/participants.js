@@ -47,7 +47,6 @@ async function getDetail(key) {
 }
 
 /* GET a list of all participants. Shows only keys */
-//TODO: add requiresAuth
 router.get("/", async function (req, res, next) {
   console.log(req.oidc.user);
   console.log("GET request for all participants made to /participants");
@@ -80,7 +79,6 @@ router.get("/details/deleted", async function (req, res, next) {
 });
 
 //GET a specific record with use of a key (email)
-//TODO: add requiresAuth
 router.get("/details/:key", async function (req, res, next) {
   console.log("a record detail has been requested");
   const participant = await getDetail(req.params.key);
@@ -94,7 +92,6 @@ router.get("/details/:key", async function (req, res, next) {
 });
 
 // POST a new record at /add
-//TODO: add requiresAuth
 router.post("/add", async function (req, res, next) {
   console.log("post request made to participants/add");
   const {
@@ -140,7 +137,6 @@ router.post("/add", async function (req, res, next) {
 });
 
 //Updates a record
-//TODO: add requiresAuth
 router.put("/:email", async function (req, res, next) {
   console.log("put request made.");
   const {
@@ -185,7 +181,6 @@ router.put("/:email", async function (req, res, next) {
 });
 
 //DELETES a record
-//TODO: add requiresAuth`
 router.delete("/details/:email", async function (req, res, next) {
   console.log("A delete request has been made.");
   const { email } = req.params;
@@ -199,7 +194,7 @@ router.delete("/details/:email", async function (req, res, next) {
   res.end();
 });
 
-//TODO: add requiresAuth
+//GET specific work details by a key
 router.get("/work/:email", async function (req, res, next) {
   console.log("Get request for /work/:email");
   const participant = await getDetail(req.params.email);
@@ -212,7 +207,7 @@ router.get("/work/:email", async function (req, res, next) {
   }
 });
 
-//TODO: add requiresAuth
+//GET specific work details by a key
 router.get("/home/:email", async function (req, res, next) {
   console.log("Get request for /home/:email");
   const participant = await getDetail(req.params.email);
