@@ -2,18 +2,20 @@
 
 Census is an app that allows an admin user to record details of participants. In addition, these records can be updated and marked as inactive (soft-deleted). 
 
-## Running locally
-Create .env file with following content
-```
-CYCLIC_DB= joyous-overcoat-bullCyclicDB
-CYCLIC_BUCKET_NAME = cyclic-joyous-overcoat-bull-eu-west-1
-CLIENT_ID = EIfN6wd8tvpuCOpoEMG4bjtLb3KwcI6D
-ISSUER_BASE_URL = https://dev-52eru17pevbl2nn2.eu.auth0.com
-SECRET = RkWwl_nb3Mo67vuNNMVuts43cZAyE1gZC8hIXRCq6s_uIEsnlMMTvmBzVOBqH-Gb
-BASE_URL = https://joyous-overcoat-bull.cyclic.app/
-```
-and run
-```
+##Need a Cyclic account where an app can be deployed. 
+A .env file needs to be created that includes the following: 
+CYCLIC_DB
+CYCLIC_BUCKET_NAME
+CLIENT_ID
+ISSUE_BASE_URL
+SECRET
+BASE_URL
+
+The above fields can be found at CYCLIC website. 
+For local development local credentials needs to be copy and pasted into the terminal before running the app. 
+These can be found on the CYCLIC website under "Data/Storage". 
+
+
 npm install
 npm start
 ```
